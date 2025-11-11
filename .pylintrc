@@ -1,0 +1,39 @@
+[MASTER]
+# 指定要加载的扩展
+extension-pkg-whitelist=
+
+[MESSAGES CONTROL]
+# 禁用的检查项
+disable=
+    R0915,  # too-many-statements (函数语句过多)
+    W0703,  # broad-except (捕获过于宽泛的异常)
+    C0301,  # line-too-long (行过长)
+    C0103,  # invalid-name (无效的变量名)
+    R0912,  # too-many-branches (分支过多)
+    R0913,  # too-many-arguments (参数过多)
+
+[REPORTS]
+# 报告格式
+output-format=text
+reports=yes
+evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
+
+[BASIC]
+# 命名规范
+good-names=i,j,k,e,f,_,bv,cid
+variable-rgx=[a-z_][a-z0-9_]{1,30}$
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+function-rgx=[a-z_][a-z0-9_]{2,40}$
+
+[FORMAT]
+# 格式化
+max-line-length=120
+indent-string='    '
+
+[DESIGN]
+# 设计
+max-args=7
+max-locals=20
+max-returns=6
+max-branches=15
+max-statements=60

@@ -4,6 +4,7 @@ import re
 import json
 import time
 
+
 def get_cid(video_url):
     """获取视频的cid"""
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -17,13 +18,14 @@ def get_cid(video_url):
     else:
         raise Exception("Failed to find cid in video page")
 
+
 if __name__ == "__main__":
-    
+
     with open('json/LLM_bv_list.json', 'r', encoding='utf-8') as f:
         bv_list = json.load(f)
-    
+
     results = {}
-    
+
     for index, bv_id in enumerate(bv_list, 1):
         video_url = f"https://www.bilibili.com/video/{bv_id}"
         try:
@@ -39,13 +41,15 @@ if __name__ == "__main__":
                 "status": "failed"
             }
             print(f"[{index}/{len(bv_list)}] BV: {bv_id}, Error: {str(e)}")
-        
+
         if index < len(bv_list):
             time.sleep(1)
-    
+
     with open('json/LLM_cid_list.json', 'w', encoding='utf-8') as f:
         json.dump(results, f, ensure_ascii=False, indent=4)
 
-    print(f"\n结果已保存到 json/LLM_cid_list.json")
-    print(f"成功: {sum(1 for v in results.values() if v['status'] == 'success')} 个")
-    print(f"失败: {sum(1 for v in results.values() if v['status'] == 'failed')} 个")
+    print("\n结果已保存到 json/LLM_cid_list.json")
+    print(
+        f"成功: {sum(1 for v in results.values() if v['status'] == 'success')} 个")
+    print(
+        f"失败: {sum(1 for v in results.values() if v['status'] == 'failed')} 个")
