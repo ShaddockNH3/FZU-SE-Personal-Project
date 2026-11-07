@@ -1,55 +1,30 @@
-import requests
-import re
+"""据 BV 号查 cid。
 
-import json
-import time
+逻辑在 bili/ 包里，这个文件只是保留原来的运行方式。
+"""
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from bili import config, crawler, storage
 
 
-def get_cid(video_url):
-    """获取视频的cid"""
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(video_url, headers=headers)
-    if response.status_code != 200:
-        raise Exception(f"Failed to fetch video page: {response.status_code}")
+def main():
+    bvs = storage.read_json(config.BV_LIST_FILE, []) or []
+    if not bvs:
+        print(f"{config.BV_LIST_FILE} 是空的，先跑 get_bv.py")
+        return 1
 
-    match = re.search(r'"cid":(\d+)', response.text)
-    if match:
-        return match.group(1)
-    else:
-        raise Exception("Failed to find cid in video page")
+    results = crawler.collect_cids(bvs)
+    storage.write_json(config.CID_LIST_FILE, results, indent=4)
+
+    ok = sum(1 for item in results.values() if item.get("status") == "success")
+    print(f"成功 {ok} 个，失败 {len(results) - ok} 个")
+    print(f"结果已写入 {config.CID_LIST_FILE}")
+    return 0
 
 
 if __name__ == "__main__":
-
-    with open('json/LLM_bv_list.json', 'r', encoding='utf-8') as f:
-        bv_list = json.load(f)
-
-    results = {}
-
-    for index, bv_id in enumerate(bv_list, 1):
-        video_url = f"https://www.bilibili.com/video/{bv_id}"
-        try:
-            cid = get_cid(video_url)
-            results[bv_id] = {
-                "cid": cid,
-                "status": "success"
-            }
-            print(f"[{index}/{len(bv_list)}] BV: {bv_id}, CID: {cid}")
-        except Exception as e:
-            results[bv_id] = {
-                "error": str(e),
-                "status": "failed"
-            }
-            print(f"[{index}/{len(bv_list)}] BV: {bv_id}, Error: {str(e)}")
-
-        if index < len(bv_list):
-            time.sleep(1)
-
-    with open('json/LLM_cid_list.json', 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=4)
-
-    print("\n结果已保存到 json/LLM_cid_list.json")
-    print(
-        f"成功: {sum(1 for v in results.values() if v['status'] == 'success')} 个")
-    print(
-        f"失败: {sum(1 for v in results.values() if v['status'] == 'failed')} 个")
+    raise SystemExit(main())
